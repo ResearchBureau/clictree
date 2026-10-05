@@ -4,4 +4,8 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "dicomtrolley>=4.1.0",
+    "midom>=0.5.1",
+    "pydicom>=3.0.2",
+]

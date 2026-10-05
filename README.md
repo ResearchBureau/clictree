@@ -40,13 +40,6 @@ Some desired properties:
 * CLICTree should be able validate any interface implementation and preferably fail 
 early if the implementing function signature does not conform.
  
-  
-## Why not just python classes? Why this interface stuff?
-Python class inheritance is too rigid. For existing code, you don't want to force
-people to suddenly base all their objects on some clictree base object.
-
-In addition, you want to be able to use multiple implementations of the same
-interface without explicitly importing them
 
 ## Why is this library not called simply 'clic'?
 Because that name was taken on pypi. Bit of a branding mistake not to check this.
@@ -56,3 +49,18 @@ AI can solve your mother. The problem being solved here is a problem of human
 communication and planning. AI can definitely help a lot to take over repetitive
 tasks, summarize contents, etc. But the core issue is still one of collaboration,
 not of lack of power to solve monotonous tasks.
+
+
+## About this package
+
+### CLICTree minimizes dependencies
+It should be a structuring base, but offer only basic functionality itself. Users
+can extend functionality as needed.
+To be able effectively offer structure, certain packages will elevated to
+core level and included. See point below.
+
+### CLICTree is opinionated
+To have structure, you need choices. CLICTree will make choices where needed.
+Things like 'All imaging studies are pydicom Datasets'. If enough people disagree
+this can be changed of course.
+
