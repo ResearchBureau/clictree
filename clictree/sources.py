@@ -5,9 +5,11 @@ from typing import Iterator
 from dicomtrolley.core import DICOMObjectReference, Query, StudyReference
 from dicomtrolley.trolley import Trolley
 
-from clictree.core import OutputType, Repository, Instance, Source
+from clictree.core import Repository, Instance, Source
 from clictree.identifiers import AccessionNumber, DICOMStudyIdentifier, StudyInstanceUID
+from clictree.logs import get_module_logger
 
+logger = get_module_logger('sources')
 
 class DICOMWebSource(Repository[DICOMStudyIdentifier,Iterator[Instance]]):
 
@@ -16,6 +18,7 @@ class DICOMWebSource(Repository[DICOMStudyIdentifier,Iterator[Instance]]):
 
     def retrieve(self, key: DICOMStudyIdentifier) -> Iterator[Instance]:
         """All instances belonging to the given study"""
+        logger.info(f'Yielding all instances for {key}')
         yield from self.trolley.fetch_all_datasets([self.resolve_identifier(key)])  # obtain Dataset for each instance
 
 

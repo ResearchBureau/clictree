@@ -41,10 +41,24 @@ Some desired properties:
 early if the implementing function signature does not conform.
  
 
-## Why is this library not called simply 'clic'?
+## Logging
+Clictree uses the standard [logging](https://docs.python.org/3/library/logging.html) module. The root logger is 
+called `clictree`. To print log messages, add the following to your code:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG) 
+
+# Optional: get the root logger to set specific properties
+root_logger = logging.getLogger('clictree')
+```
+
+## more talk
+
+### Why is this library not called simply 'clic'?
 Because that name was taken on pypi. Bit of a branding mistake not to check this.
 
-## Can't AI just solve this?
+### Can't AI just solve this?
 AI can solve your mother. The problem being solved here is a problem of human 
 communication and planning. AI can definitely help a lot to take over repetitive
 tasks, summarize contents, etc. But the core issue is still one of collaboration,

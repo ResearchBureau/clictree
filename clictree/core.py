@@ -11,10 +11,19 @@ InputType = TypeVar("InputType")
 OutputType = TypeVar("OutputType")
 KeyType = TypeVar("KeyType")
 
+
+
 class Transformation(ABC, Generic[InputType, OutputType]):
     """Change a data item somehow"""
     @abstractmethod
     def transform(self, input_data: InputType) -> OutputType:
+        """Tranform the given input data into the given output.
+
+        Raises
+        ------
+        TransformationError:
+            If the transformation cannot be completed for any reason
+        """
         pass
 
 class Repository(ABC, Generic[KeyType, OutputType]):
