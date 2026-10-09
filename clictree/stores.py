@@ -1,4 +1,4 @@
-"""Things you can save data items in"""
+"""Things you can save data mapping in"""
 from os import PathLike
 from pathlib import Path
 
