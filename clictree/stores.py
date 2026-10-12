@@ -4,9 +4,9 @@ from pathlib import Path
 
 from dicomtrolley.storage import StorageDir
 
-from clictree.core import InputType, Instance, KeyType, Store
+from clictree.core import InputType, Instance, KeyType, Deposit
 
-class DICOMDiskStorage(Store[Instance,Path]):
+class DICOMDiskStorage(Deposit[Instance,Path]):
     """Stores a DICOM instance to a file on disk. Path is based on uids."""
 
     def __init__(self, root_path: PathLike):

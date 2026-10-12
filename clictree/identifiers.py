@@ -62,6 +62,10 @@ class URI:
     def __eq__(self, other):
         return self.as_tuple() == other.as_tuple()
 
+    def __hash__(self):
+        """A URI is fully described by its string value"""
+        return hash(self.to_string())
+
     @classmethod
     def is_root(cls, string_in):
         """This string denotes a URI starting at root. It is not relative"""

@@ -5,13 +5,15 @@ from typing import Iterator
 from dicomtrolley.core import DICOMObjectReference, Query, StudyReference
 from dicomtrolley.trolley import Trolley
 
-from clictree.core import Repository, Instance, Source
+from clictree.core import InputType, KeyType, OutputType, Store, Instance, Source, \
+    Transformation
+from clictree.data_items import InstanceIterator
 from clictree.identifiers import AccessionNumber, DICOMStudyIdentifier, StudyInstanceUID
 from clictree.logs import get_module_logger
 
 logger = get_module_logger('sources')
 
-class DICOMWebSource(Repository[DICOMStudyIdentifier,Iterator[Instance]]):
+class DICOMWebSource(Store[DICOMStudyIdentifier,Iterator[Instance]]):
 
     def __init__(self, trolley: Trolley):
         self.trolley = trolley
@@ -45,6 +47,3 @@ class AccessionNumberList(Source[AccessionNumber]):
         with open(self.path,'r') as f:
             for line in f:
                 yield AccessionNumber(line.strip('\n\r'))
-
-
-
