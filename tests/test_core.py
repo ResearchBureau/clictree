@@ -1,6 +1,6 @@
 import pytest
 
-from clictree.core import Domain
+from clictree.core import Context, Domain, LinkedContainer
 from clictree.identifiers import URI
 from clictree.keyfiles import DictKeyFile
 from tests.factories import PatientChanger, SimpleStore
@@ -57,6 +57,25 @@ def test_domain_pipeline():
     assert len(studies) == 3
     assert studies[1].PatientID == "Patient_1_MODIFIED"
 
+
+
+def test_context_pipeline():
+    """Try to download something from a different domain through a Link
+    """
+
+    # a context with a clinical domain and a user domain
+    context = Context(
+        domains={"CLINICAL":Domain(containers={"VNA":SimpleStore()}),
+                 "USER":Domain()}
+    )
+
+    #From user domain I want to obtain some data. Create a link.
+    #link =
+    # Create a LinkedContainer to attach the link to
+    #context.create_linked_container(name, link)
+    #linked_container = LinkedContainer()
+    #context.domains["USER"].register_container("")
+    #context.register_link(data_source="CLINICAL/VNA",data_destination="USER/VNALINK",link=...)
 
 
 

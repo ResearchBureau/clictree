@@ -12,47 +12,85 @@ DataTtem <-  Collection <- Domain <- Context
   credentials are available.
 
 """
+from enum import IntEnum
 from itertools import dropwhile
 
 
 class Identifier:
-    """A key to identify a single thing"""
+    """A key to identify a single thing.
+
+    Can always be represented by a string"""
     def __init__(self, value:str):
         self.value = value
 
     def __str__(self):
         return f"{type(self).__name__} : {self.value}"
 
+class URIReference(Identifier):
+    """A key referencing a single URI.
+
+    Allows the 'naming' of any URI making it possible to create a uri that points to
+    a second uri. A subtle and important part of linking, referencing and chaining"""
+    pass
+
+class URIScope(IntEnum):
+    """How broad is a URI's area of validity? Does it only reference a local DataItem
+    (small scope), or does it also define which container, domain, context this is in
+    (large scope)?
+
+    Important for permissions management. Only high-level operations can use broad-scope
+    urls
+    """
+    DATA_ITEM = 0
+    CONTAINER = 1
+    DOMAIN = 2
+    CONTEXT = 3
+
+class URIReferenceLevel(IntEnum):
+    """At which level does this URI refence an object? Does it reference a DataItem
+    (low reference level), an entire context (high reference level),
+    or something in between?
+    """
+    DATA_ITEM = 0
+    CONTAINER = 1
+    DOMAIN = 2
+    CONTEXT = 3
 
 class URI:
     """Identifies a location or object.
 
-    Can be absolute or relative. An absolute URI uniquely
-    identifies a single data item within a context
+    format: /<context>/<domain>/<container>/<uid>
 
-    Partial URIs identify a data item at lower levels in the location hierarchy.
+    * '/a/b/c/d' fully locates a uid 'a' in a container 'b', domain 'c', context 'd'
+
+    You can leave off the root indicator to create a relative reference:
+    * 'a'/'b' is a valid URI for a data item 'a' within a domain 'b'
+
+    The root indicator (slash) is important in interpreting a URL.
+    Without root indicator, location elements are read from right to left:
+    * 'a/b' means 'b' is the left-most location element <uid>,
+       meaning 'a/b' refers to uid 'b' in container 'a'
+    With root indicator, location elements are read from left to right:
+    * '/a/b' means 'a' is the right-most location element <context>,
+       meaning '/a/b' refers to domain 'b' in context 'a'
+    You can use empty values to create relative links at any level:
+    *  '//a/b' is a valid reference to a container 'b' in domain 'a'
+
+    Location elements can be empty, but have to be consecutive:
+    * 'a/b' is a valid reference to DataItem 'b' in container 'a'
+    * '///a/b' means the same and is also valid
+    * '//a//b' is not consecutive and thus invalid. DataItem 'b' in domain 'a' is
+      meaningless without knowing the container in between.
 
     Properties
     ----------
     A URI should be serializable to string
-
-    Location elements can be empty, but have to be consecutive.
-    * <container>:<uid> is a valid URI for a data item within a domain
-    * <domain>:<container> is a valid URI for a single container
-    * <domain>:<uid> is invalid as the intermediate level <container> is missing.
-
-    Development Notes
-    -----------------
-    This whole class seems very bloated. Basically it is a string that can be parsed
-    and the parsing has a particular structure. Nothing that would require 9+
-    subfunctions. Investigate whether this can be done better with pydantic and possibly
-    a parsing definition language. Is LARK overkill?
     """
 
     SEPARATOR = "/"
     ROOT_INDICATOR = "/"
 
-    def __init__(self, context_name: str, domain_name, container_name: str,
+    def __init__(self, context_name: str, domain_name:str, container_name: str,
                  data_item_uid: str):
         self.context_name = context_name
         self.domain_name = domain_name
@@ -60,11 +98,15 @@ class URI:
         self.data_item_uid = data_item_uid
 
     def __eq__(self, other):
-        return self.as_tuple() == other.as_tuple()
+        if not hasattr(other, "as_tuple"):
+            return False
+        else:
+            return self.as_tuple() == other.as_tuple()
 
     def __hash__(self):
         """A URI is fully described by its string value"""
         return hash(self.to_string())
+
 
     @classmethod
     def is_root(cls, string_in):
@@ -80,7 +122,7 @@ class URI:
         /<context>/<domain>/<container>/<uid>
         Slash-separated. Initial slash denotes root level.
         uri without root is assumed to be partial, and filled from right to left.
-        For example "boo/faz" is a partial URI for a container 'boo' containg item
+        For example "boo/faz" is a partial URI for a container 'boo' containing item
         'faz', while "/boo/faz" is absolute, denoting a context 'boo' containing a
         domain 'faz'
 
@@ -91,30 +133,68 @@ class URI:
         """
 
         if cls.is_root(string_in):
-            # this is an absolute path. Fill context and subsequent elements
-            parsed = cls.from_tuple(
-                rpad(string_in.lstrip(
-                    cls.ROOT_INDICATOR).split(cls.SEPARATOR),4,fill=None))
-
+            # this is an absolute path. Fill context from left to right.
+            # Could not think of an elegant way to do this.
+            to_parse = string_in[1:]
+            params = (to_parse.split(cls.SEPARATOR) + [""] * 4)[:4]
         else:
-            # this is relative. Fill uid and anything before that
-            parsed = cls.from_tuple(lpad(string_in.split(cls.SEPARATOR), 4, fill=None))
+            # this is relative. Fill context from right to left
+            params = (([""] * 4) + string_in.split(cls.SEPARATOR))[-4:]
 
-        if parsed.is_valid():
-            return parsed
-        else:
-            raise ValueError(f"Parsed URI {parsed} is not valid")
+        params = tuple(None if x is "" else x for x in params)
+        return cls.from_tuple(params)
 
     @classmethod
     def from_tuple(cls, tuple_in):
-        """Expects exactly size-4 tuple. None values allowed"""
+        """Expects exactly size-4 tuple. None values allowed
+        Raises
+        ------
+        ValueError
+            If the tuple results in an invalid URI
+        """
         context, domain, container, uid = tuple_in
-        return cls(context, domain, container, uid)
+        created = cls(context, domain, container, uid)
+        if created.is_valid():
+            return created
+        else:
+            raise ValueError(f"Cannot create valid URL from tuple {tuple_in}")
+
+    def scope(self) -> URIScope:
+        # get highest filled in element
+        if self.context_name:
+            return URIScope.CONTEXT
+        elif self.domain_name:
+            return URIScope.DOMAIN
+        elif self.container_name:
+            return URIScope.CONTAINER
+        elif self.data_item_uid:
+            return URIScope.DATA_ITEM
+        raise ValueError("Could not determine scope. Is this URI empty?")
+
+
+    def reference_level(self) -> URIReferenceLevel:
+        """At which level does this URI refence an object? Does it reference a DataItem
+        (low reference level), an entire context (high reference level),
+        or something in between?
+        """
+        # get lowest filled in element
+        if self.data_item_uid:
+            return URIScope.DATA_ITEM
+        elif self.container_name:
+            return URIScope.CONTAINER
+        elif self.domain_name:
+            return URIScope.DOMAIN
+        elif self.context_name:
+            return URIScope.CONTEXT
+
+        raise ValueError("Could not determine reference level. Is this URI empty?")
 
     def to_string(self) -> str:
-        uri = self.SEPARATOR.join(trim_none(self.as_tuple()))
-        if self.is_absolute():
-            uri = self.ROOT_INDICATOR + uri
+        uri = self.SEPARATOR.join("" if x is None else x for x in self.as_tuple())
+        if self.reference_level() > URIScope.DATA_ITEM:
+            # if this does not reference a data item we need to make it absolute
+            # also removing trailing separators because they are ugly and hold no info
+            uri = (self.ROOT_INDICATOR + uri).rstrip(self.SEPARATOR)
         return uri
 
 
@@ -123,22 +203,19 @@ class URI:
                 self.data_item_uid)
 
     def is_absolute(self) -> bool:
-        """This URI starts at the widest location level: context. Is not relative."""
+        """This URI starts at the widest location level: context. Is not relative to
+        context"""
         return bool(self.context_name)
-
-    def is_data_item_reference(self):
-        """This URI references a data item, not a higher-level location"""
-        return bool(self.data_item_uid)
 
     def is_consecutive(self) -> bool:
         """Running through location hierarchy from left to right, they form a
         consecutive block without holes
         """
-        return any(x for x in trim_none(self.as_tuple) if x is None)
+        return any(x for x in trim_none(self.as_tuple()) if x is None)
 
     def is_valid(self):
         """Check whether this uri points to either a location or a data item"""
-        if self.is_consecutive and (self.is_absolute or self.is_data_item_reference):
+        if self.is_consecutive:
             return True
         else:
             return False
@@ -152,18 +229,11 @@ class URI:
         # are no hidden variables.
         return self.to_string()
 
+
 def trim_none(tuple_in):
     """Remove any None values from both sides of a tuple"""
     tuple_in = tuple(dropwhile(lambda x: x is None, tuple_in))  # trim left
     return tuple(dropwhile(lambda x: x is None, reversed(tuple_in)))[::-1]  # trim right
-
-def lpad(tuple_in, size:int, fill=None):
-    """Enlarge tuple to be size. Fill with filler on the left if needed"""
-    return (fill,) * (size - len(tuple_in)) + tuple(tuple_in)
-
-def rpad(tuple_in, size:int , fill=None):
-    """Enlarge tuple to be size. Fill with filler on the right if needed"""
-    return tuple(tuple_in) + (fill,) * (size - len(tuple_in))
 
 class DICOMStudyIdentifier(Identifier):
     """A key to identify a single DICOM study"""

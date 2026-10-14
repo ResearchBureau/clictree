@@ -1,10 +1,11 @@
 import pydicom
 
 from abc import ABC, abstractmethod
-from typing import ClassVar, Dict, Generic, Iterable, Iterator, List, Optional, TypeVar, \
-    Union, get_args, get_origin
+from typing import Any, ClassVar, Dict, Generic, Iterable, Iterator, List, Optional, \
+    TypeVar, Union, get_args, get_origin
 
-from clictree.identifiers import Identifier, PatientIdentifier, UNKNOWN_PATIENT, URI
+from clictree.identifiers import Identifier, PatientIdentifier, UNKNOWN_PATIENT, URI, \
+    URIReference, URIScope
 
 # in clictree all studies are represented by pydicom datasets
 Instance = pydicom.Dataset
@@ -91,7 +92,7 @@ class Collection:
         self.cmo = cmo
 
 
-class KeyFile(ABC):
+class KeyFile(ABC, Generic[KeyType]):
     """A store and generator for orginal -> pseudonym mappings
 
     Main method is
@@ -202,11 +203,17 @@ class Domain:
     def get_uri(self, identifier) -> URI:
         """Get a URI to this identifier within domain
 
-        Where is in this domain is the data that this identifier is pointing to?
+        Where in this domain is the data that this identifier is pointing to?
         """
         pass
 
     def get_data_item(self, uri: URI) -> DataItem:
+
+        if uri.scope() > URIScope.CONTAINER:
+            raise ValueError(f'Cannot use URI {uri} as it its scope is broader than'
+                             f'CONTAINER. I can only get data items from within a the '
+                             f'current domain,'
+                             f'not from ')
 
         # resolve URI
         container = self.containers[uri.container_name]
@@ -228,21 +235,97 @@ class Domain:
 
 class TransformationMap:
     """"""
+    pass
+
+
+
+class Link(ABC, Generic[InputType,OutputType]):
+    """Connects two containers across a domain boundary. Translates Identifiers
+    between domains, and transforms data as it crosses the boundary.
+    Is one-directional. A link A -> B means A can access a transformation of
+    DataItems in B. InputType is the data coming from B, OutputType is the
+    data being passed to A.
+
+    A link reasons across domains so can only exist at the context level or higher.
+    Link itself cannot collect data. It is only a tool used by context to know
+    what to collect and how to transform.
+    """
+
+    data_source_domain: Domain  # linking directly here to enable Link to perform
+                                # domain-level actions. Not sure this should be here
+    data_source_domain_name: str # probably move this into a URI
+    data_source_name: str  # name of container that data should be coming from
+
+
+    @abstractmethod
+    def get_original_uri(self, reference: URIReference) -> URI:
+        """Given the reference used in A, what in B does this point to?"""
+        pass
+
+    @abstractmethod
+    def transform(self, input_data: InputType) -> OutputType:
+        """Tranform the given input data into the given output.
+
+        Raises
+        ------
+        TransformationError:
+            If the transformation cannot be completed for any reason
+        """
+        pass
+
+    def get_data_item(self, reference: URIReference) -> OutputType:
+        """Obtain a transformed version of the referenced DataItem"""
+        return self.transform(
+            self.data_source_domain.get_data_item(
+                self.get_original_uri(reference)))
+
+
+
+class LinkedContainer(Store[URIReference, OutputType]):
+    """Represents a link to a container in a different domain. This is the only place
+    within a domain that you can access DataItems from other domains. What you receive
+    is always a transformation, never the original DataItem.
+    """
+    link: Link[Any,OutputType]
+
+    def retrieve(self, key: URIReference) -> OutputType:
+        self.link.get_original_uri
+
 
 class Context:
-    """Highest-level location in clic. Can contain multiple domains. Responsibilities
-    are holding credentials, resolving URIs and guiding data item transfer.
+    """Highest-level location in clic. Can contain multiple domains.
+
+    Responsibilities
+    ----------------
+    * Holds credentials
+    * Resolves URIs above domain level
+    * Holds domain-boundary crossing links
     """
-    def __init__(self, domains=Optional[List[Domain]]):
+    def __init__(self, domains:Optional[Dict[str,Domain]]=None,
+                 links:Optional[Dict[str,Link]]=None):
+        if domains is None:
+            domains = []
+        if links is None:
+            links = []
         self.domains = domains
+        self.links = links
 
 
+    def get_data_item(self, uri: URI) -> DataItem:
+        """Get the DataItem indicated by a domain-level URI"""
+        if uri.scope > URIScope.DOMAIN:
+            raise ValueError(f'Cannot use URI {uri} as it its scope is broader than'
+                             f'DOMAIN. I can only get data items from within a context,'
+                             f'not between contexts')
 
-class Link:
-    """Connects Collection A with Collection or Source B. Is one-directional. A link
-    A -> B means A can access DataItems in B. Access is never direct, but always
-    through a transformation.
-    """
+        # Is there a registered link for the domain/container being referenced?
+        # if so, translate, obtain, filter and return
+        # link.get_linked_url
 
-    def __init__(self, collection_a: Collection, container_b:Container):
-        pass
+
+        # if not, just return directly
+        domain = self.domains[uri.domain_name]
+        # change URI to the right level
+        # return domain.get_data_item(uri_new)
+
+

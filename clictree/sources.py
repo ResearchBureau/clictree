@@ -47,3 +47,6 @@ class AccessionNumberList(Source[AccessionNumber]):
         with open(self.path,'r') as f:
             for line in f:
                 yield AccessionNumber(line.strip('\n\r'))
+
+
+class KeyFileLink
