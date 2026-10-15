@@ -40,7 +40,7 @@ class SimpleLink(Link[InstanceIterator, InstanceIterator]):
 
 
     def transform(self, input_data: InstanceIterator) -> InstanceIterator:
-        pass
+        return input_data  # don't change
 
 
     def get_original_uri(self, reference: ResultReference) -> URI:
