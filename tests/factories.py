@@ -4,7 +4,7 @@ from dicomgenerator.generators import quick_dataset
 from clictree.core import InputType, KeyFile, Link, OutputType, Store, Transformation
 from clictree.data_items import InstanceIterator
 from clictree.identifiers import DICOMStudyIdentifier, PatientIdentifier, URI, \
-    URIReference
+    ResultReference
 from clictree.transformations import DICOMDeidentifier
 
 
@@ -39,17 +39,17 @@ class SimpleLink(Link[InstanceIterator, InstanceIterator]):
     """
 
 
-    def __init__(self, key_file:KeyFile):
-        self.key_file = key_file
-
     def transform(self, input_data: InstanceIterator) -> InstanceIterator:
         pass
 
 
-    def get_original_uri(self, reference: URIReference) -> URI:
+    def get_original_uri(self, reference: ResultReference) -> URI:
         if "CHANGED" not in reference.value:
             raise ValueError(f"Unknown reference '{reference}' "
                              "I only know original URIs for references ending in "
                              "_CHANGED")
-        return self #TODO
+        return URI(context_name=None,domain_name=self.data_source_container.domain_name,
+                   container_name=self.data_source_container.container_name,
+                   data_item_uid=reference.value.replace("_CHANGED",""))
+
 

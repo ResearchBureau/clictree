@@ -14,6 +14,7 @@ DataTtem <-  Collection <- Domain <- Context
 """
 from enum import IntEnum
 from itertools import dropwhile
+from typing import Optional
 
 
 class Identifier:
@@ -26,11 +27,11 @@ class Identifier:
     def __str__(self):
         return f"{type(self).__name__} : {self.value}"
 
-class URIReference(Identifier):
-    """A key referencing a single URI.
+class ResultReference(Identifier):
+    """A key referencing a transformation of a single DataItem.
 
-    Allows the 'naming' of any URI making it possible to create a uri that points to
-    a second uri. A subtle and important part of linking, referencing and chaining"""
+    Allows the 'naming' of any Transformation result, making it possible to create a
+    uri that points to a second uri. Important for linking, referencing and chaining"""
     pass
 
 class URIScope(IntEnum):
@@ -90,8 +91,9 @@ class URI:
     SEPARATOR = "/"
     ROOT_INDICATOR = "/"
 
-    def __init__(self, context_name: str, domain_name:str, container_name: str,
-                 data_item_uid: str):
+    def __init__(self, context_name: Optional[str]=None, domain_name:Optional[str]=None,
+                 container_name:Optional[str]=None,
+                 data_item_uid:Optional[str]=None):
         self.context_name = context_name
         self.domain_name = domain_name
         self.container_name = container_name
@@ -195,6 +197,11 @@ class URI:
             # if this does not reference a data item we need to make it absolute
             # also removing trailing separators because they are ugly and hold no info
             uri = (self.ROOT_INDICATOR + uri).rstrip(self.SEPARATOR)
+        elif self.reference_level() == URIScope.DATA_ITEM:
+            # if you are referencing a data item then you don't need any leading
+            # separators
+            uri = uri.lstrip(self.SEPARATOR)
+
         return uri
 
 

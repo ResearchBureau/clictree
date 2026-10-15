@@ -1,9 +1,9 @@
 import pytest
 
-from clictree.core import Context, Domain, LinkedContainer
+from clictree.core import Context, Domain, LinkedContainer, TransformedStore
 from clictree.identifiers import URI
 from clictree.keyfiles import DictKeyFile
-from tests.factories import PatientChanger, SimpleStore
+from tests.factories import PatientChanger, SimpleLink, SimpleStore
 
 
 def test_keyfile():
@@ -30,7 +30,7 @@ def test_domain_basic():
     assert studies[1].SOPInstanceUID == "2"
 
 def test_domain_pipeline():
-    """Try to download something that requires chaining through a pipeline"""
+    """Try to download something that requires chaining through a link"""
 
     # create a domain
     domain = Domain()
@@ -40,23 +40,18 @@ def test_domain_pipeline():
     domain.register_container(a_store, "STORE")
 
     # And something which transforms
-    a_transformation = PatientChanger()
-    domain.register_container(a_transformation, "TRANSFORMED")
-
-    # Link transformation to Store.
-    # if you want TRANSFORMED:studyA, you need to feed in VNA/studyA
-    domain.register_transformation(URI.from_string("TRANSFORMED/studyA"),
-                                   URI.from_string("STORE/studyA"))
-    # todo: do some type checking, fail if input/output do not match
+    transformed = TransformedStore(data_source=a_store, transformation=PatientChanger())
+    domain.register_container(transformed, "TRANSFORMED")
 
     # Now you should be able to ask the domain for this URI
-    data = domain.get_data_item(URI.from_string("TRANSFORMED/studyA"))
+    data = domain.get_data_item(URI.from_string("TRANSFORMED/1234"))
     studies = [x for x in data.data]
 
-    # and the domain should be able to figure out what is needed.
+    # and the domain should be able to figure out what is needed, obtain source,
+    # run transformation
     assert len(studies) == 3
     assert studies[1].PatientID == "Patient_1_MODIFIED"
-
+    assert studies[1].StudyInstanceUID == "1234"
 
 
 def test_context_pipeline():
@@ -70,12 +65,18 @@ def test_context_pipeline():
     )
 
     #From user domain I want to obtain some data. Create a link.
-    #link =
-    # Create a LinkedContainer to attach the link to
-    #context.create_linked_container(name, link)
-    #linked_container = LinkedContainer()
-    #context.domains["USER"].register_container("")
-    #context.register_link(data_source="CLINICAL/VNA",data_destination="USER/VNALINK",link=...)
+    link = SimpleLink(data_source_container=URI.from_string("//CLINICAL/VNA"),context=context)
+    context.links.append(link)
+
+    # Create a LinkedContainer in USER domain to attach the link to
+    linked = LinkedContainer(link=link)
+    context.domains["USER"].containers["LINKED"] = linked
+
+    # now try to obtain some data from USER domain via the link
+    user_domain = context.domains["USER"]
+    studies = user_domain.get_data_item(URI.from_string("LINKED/patient_CHANGED"))
+
+    test = 1
 
 
 
