@@ -1,19 +1,14 @@
-import pydicom
-
 from abc import ABC, abstractmethod
-from typing import Any, ClassVar, Dict, Generic, Iterable, Iterator, List, Optional, \
+from typing import Any, Dict, Generic,  Iterator, List, Optional, \
     TypeVar, Union, get_args, get_origin
 
-from clictree.identifiers import Identifier, PatientIdentifier, UNKNOWN_PATIENT, URI, \
+from clictree.identifiers import PatientIdentifier, UNKNOWN_PATIENT, URI, \
     ResultReference, URIScope
 
-# in clictree all studies are represented by pydicom datasets
-Instance = pydicom.Dataset
-
+# variables used in abstract base classes below
 InputType = TypeVar("InputType")
 OutputType = TypeVar("OutputType")
 KeyType = TypeVar("KeyType")
-
 
 
 class Transformation(ABC, Generic[InputType, OutputType]):
@@ -28,6 +23,17 @@ class Transformation(ABC, Generic[InputType, OutputType]):
             If the transformation cannot be completed for any reason
         """
         pass
+
+class Identity(Transformation[Any, Any]):
+    """Let data through unaltered.
+
+    All other transformation child classes are in clictree.transformations. This one
+    is an exception as it is part of the default Link implementation below
+    """
+
+    def transform(self, input_data: Any) -> Any:
+        return input_data
+
 
 class Store(ABC, Generic[KeyType, OutputType]):
     """A thing that can provide a specific dataitem by key"""
@@ -293,7 +299,8 @@ class Link(ABC, Generic[InputType,OutputType]):
     what to collect and how to transform.
     """
 
-    def __init__(self, data_source_container: URI, context:Context):
+    def __init__(self, data_source_container: URI, context:Context,
+                 transformation:Optional[Transformation]=None):
         """
 
         Parameters
@@ -303,9 +310,15 @@ class Link(ABC, Generic[InputType,OutputType]):
         context:
             linking whole context hereto enable Link to perform domain-level actions.
             This will be behind some kind of authorisation layer in the future
+        transformation, optional:
+            Transformation for any data requested through this link. Defaults to
+            Identity, meaning data is let through unaltered
         """
         self.data_source_container = data_source_container
         self.context = context
+        if transformation is None:
+            transformation = Identity()
+        self.transformation = transformation
 
     @abstractmethod
     def get_original_uri(self, reference: ResultReference) -> URI:
@@ -321,7 +334,7 @@ class Link(ABC, Generic[InputType,OutputType]):
         TransformationError:
             If the transformation cannot be completed for any reason
         """
-        pass
+        self.transformation.transform(input_data)
 
     def get_data_item(self, reference: ResultReference) -> OutputType:
         """Obtain a transformed version of the referenced DataItem"""

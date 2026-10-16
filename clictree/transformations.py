@@ -1,8 +1,8 @@
 """Classes that transform a data item"""
 
 from midom.validation import Deidentifier
-from clictree.core import Instance, KeyFile, Transformation
-
+from clictree.core import Transformation
+from clictree.data_items import Instance
 
 
 class DICOMDeidentifier(Transformation[Instance, Instance]):

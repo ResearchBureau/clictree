@@ -2,8 +2,13 @@
 
 from typing import Iterator
 
-from clictree.core import DataItem, Instance
+import pydicom
 
+from clictree.core import DataItem
+
+
+# in clictree all studies are represented by pydicom datasets
+Instance = pydicom.Dataset
 
 class InstanceIterator(DataItem[Iterator[Instance]]):
     pass
