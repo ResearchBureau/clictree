@@ -17,11 +17,14 @@ def test_keyfile():
     key_file.add_map(acc_map)
 
     # seed some values
-    backend.insert(key=PatientIdentifier('John'),value=PatientIdentifier('Patient_1}'))
-    backend.insert(key=PatientIdentifier('Sue'), value=PatientIdentifier('Patient_2}'))
+    backend.insert(key=PatientIdentifier('John'),value=PatientIdentifier('Patient_1'))
+    backend.insert(key=PatientIdentifier('Sue'), value=PatientIdentifier('Patient_2'))
 
     # check retrieval
-    test = key_file.retrieve_pseudonym(PatientIdentifier("John"))
-    test2 = 1
+    pseudonym = key_file.retrieve_pseudonym(PatientIdentifier("John"))
+    assert pseudonym.value == 'Patient_1'
+
+    assert key_file.retrieve_original(pseudonym).value == "John"
+
 
 

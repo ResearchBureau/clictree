@@ -12,20 +12,24 @@ DataTtem <-  Collection <- Domain <- Context
   credentials are available.
 
 """
+from dataclasses import dataclass
 from enum import IntEnum
 from itertools import dropwhile
 from typing import Optional
 
 
+@dataclass(frozen=True)
 class Identifier:
-    """A key to identify a single thing.
+    """A key to identify a single thing. Is frozen data class so any instance with
+    the same value will be seen as the same thing.
 
     Should always be serializable to string"""
-    def __init__(self, value:str):
-        self.value = value
+
+    value: str
 
     def __str__(self):
         return f"{type(self).__name__} : {self.value}"
+
 
 class ResultReference(Identifier):
     """A key referencing a transformation of a single DataItem.

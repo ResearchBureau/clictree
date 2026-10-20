@@ -87,7 +87,7 @@ class KeyMap(ABC, Generic[KeyType]):
     @classmethod
     def key_type(cls):  # possible dark magic.
         for base in getattr(cls, "__orig_bases__", ()):
-            if get_origin(base) is Store:
+            if get_origin(base) is KeyMap:
                 return get_args(base)[0]
         raise TypeError(f"{cls.__name__} does not bind KeyType")
 
@@ -165,10 +165,10 @@ class KeyFile:
             If no KeyMap can be found
         """
         try:
-            return self.key_maps[(type(Identifier))]
+            return self.key_maps[(type(key))]
         except KeyError as e:
             raise KeyFileError(f'Cannot find KeyMap for {key} '
-                               f'(type "{type(Identifier)}")') from e
+                               f'(type "{type(key)}")') from e
 
 
     def retrieve_pseudonym(self, key: Identifier) -> Identifier:
@@ -228,14 +228,14 @@ class MemoryOnlyBackend(Backend):
 
     def retrieve_key(self, value: Identifier) -> Identifier:
         # not going for any optimization here
-        return self.reversed_mapping[type[value]][value]
+        return self.reversed_mapping[type(value)][value]
 
     def insert(self, key: Identifier, value: Identifier):
         self.mapping[type(key)][key] = value
-        self.reversed_mapping[type(value)][key] = key
+        self.reversed_mapping[type(value)][value] = key
 
     def retrieve_value(self, key: Identifier) -> Identifier:
-        return self.mapping[type[key]][key]
+        return self.mapping[type(key)][key]
 
 
 class PatientIdentifierMap(KeyMap[PatientIdentifier]):
