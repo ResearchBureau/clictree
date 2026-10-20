@@ -1,20 +1,8 @@
-import pytest
 
 from clictree.core import Context, Domain, LinkedContainer, TransformedStore
 from clictree.identifiers import URI
-from clictree.keyfiles import DictKeyFile
 from tests.factories import PatientChanger, SimpleLink, SimpleStore
 
-
-def test_keyfile():
-    key_file = DictKeyFile(mapping={"5": "patient1", "9": "patient2"})
-    assert key_file.retrieve_pseudonym("5") == "patient1"
-    with pytest.raises(KeyError):
-        key_file.retrieve_pseudonym("2")
-
-    assert key_file.retrieve_original("patient2") == "9"
-    with pytest.raises(KeyError):
-        key_file.retrieve_original("unknown")
 
 def test_domain_basic():
     """Simplest use of domain. Download one thing from a store"""

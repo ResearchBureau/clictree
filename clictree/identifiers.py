@@ -20,7 +20,7 @@ from typing import Optional
 class Identifier:
     """A key to identify a single thing.
 
-    Can always be represented by a string"""
+    Should always be serializable to string"""
     def __init__(self, value:str):
         self.value = value
 

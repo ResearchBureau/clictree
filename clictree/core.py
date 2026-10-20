@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic,  Iterator, List, Optional, \
-    TypeVar, Union, get_args, get_origin
+from typing import Any, Dict, Generic, Iterator, List, Optional, TypeVar, Union, \
+    get_args, get_origin
 
 from clictree.identifiers import PatientIdentifier, UNKNOWN_PATIENT, URI, \
     ResultReference, URIScope
@@ -133,69 +133,6 @@ class Collection:
         self.items = items
         self.cmo = cmo
 
-
-class KeyFile(ABC, Generic[KeyType]):
-    """A store and generator for orginal -> pseudonym mappings
-
-    Main method is
-
-    Child classes must implement retrieve_pseudonym() and retrieve_original()
-    Child classes may implement generate_pseudonym()
-
-    Comments
-    --------
-    Considered giving keyfile a dict-like interface but decided against it. Opted
-    instead for explicit method calls for two main reasons.
-    1) There is no natural dict-like mapping for the distinction between retrieve
-    (get it if its there) and obtain (generate if you can't retrieve).
-    2) dict-like interface indicates quick, direct-memory access. For several KeyFile
-    implementations, obtaining might involve server querying and not be as quick
-    as the interface suggests.
-    """
-
-    @abstractmethod
-    def retrieve_pseudonym(self, key:KeyType) -> KeyType:
-        """Find the pseudonym for this key
-
-        Raises
-        ------
-        KeyError
-            If no pseudonym can be found
-        """
-        pass
-
-    @abstractmethod
-    def retrieve_original(self, pseudonym: KeyType) -> KeyType:
-        """Find the original key for this pseudonym
-
-        Raises
-        ------
-        KeyError
-            If no original key can be found
-        """
-        pass
-
-    def obtain_pseudonym(self, key:KeyType) -> KeyType:
-        """Find pseudonym for this key, generate if it cannot be found
-
-        Raises
-        ------
-        KeyError
-            If pseudonym could not be obtained
-        """
-        try:
-            return self.retrieve_pseudonym(key)
-        except KeyError:
-            try:
-                return self.generate_pseudonym(key)
-            except NotImplementedError as e:
-                raise KeyError(f"Cannot obtain a pseudonym for {key}") from e
-
-
-    def generate_pseudonym(self, key:KeyType) -> KeyType:
-        """Create a new pseudonym for the given key"""
-
-        raise NotImplementedError("No method to generate pseudonyms!")
 
 Container = Union[Collection, Store]
 

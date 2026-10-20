@@ -4,3 +4,6 @@ class ClictreeError(Exception):
 class TransformationError(ClictreeError):
     """A transformation can not be completed"""
     pass
+
+class KeyFileError(ClictreeError):
+    pass
