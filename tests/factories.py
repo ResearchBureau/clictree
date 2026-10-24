@@ -50,5 +50,3 @@ class SimpleLink(Link[InstanceIterator, InstanceIterator]):
         return URI(context_name=None,domain_name=self.data_source_container.domain_name,
                    container_name=self.data_source_container.container_name,
                    data_item_uid=reference.value.replace("_CHANGED",""))
-
-

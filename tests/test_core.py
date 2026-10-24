@@ -23,11 +23,11 @@ def test_domain_pipeline():
     # create a domain
     domain = Domain()
 
-    # With a store that yields datasets
+    # With a store that yields datasets for whatever key you ask it for
     a_store = SimpleStore()
     domain.register_container(a_store, "STORE")
 
-    # And something which transforms
+    # And something which transforms. Just adds _MODIFIED to patientID
     transformed = TransformedStore(data_source=a_store, transformation=PatientChanger())
     domain.register_container(transformed, "TRANSFORMED")
 

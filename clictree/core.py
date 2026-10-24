@@ -58,7 +58,7 @@ class Store(ABC, Generic[KeyType, OutputType]):
 
 class TransformedStore(Store[ResultReference, OutputType],
                        Generic[OutputType]):
-    """A store that is a transformed view of a source
+    """A store that is a transformed view of another collection (store or collection)
 
     Warning
     -------
@@ -245,7 +245,7 @@ class Link(ABC, Generic[InputType,OutputType]):
         data_source_container:
             A URI "//domain/container". The name of the data source
         context:
-            linking whole context hereto enable Link to perform domain-level actions.
+            linking whole context. here to enable Link to perform domain-level actions.
             This will be behind some kind of authorisation layer in the future
         transformation, optional:
             Transformation for any data requested through this link. Defaults to
@@ -259,7 +259,14 @@ class Link(ABC, Generic[InputType,OutputType]):
 
     @abstractmethod
     def get_original_uri(self, reference: ResultReference) -> URI:
-        """Given the reference used in A, what in B does this point to?"""
+        """Given the reference used in A, what in B does this point to?
+        Raises
+        ------
+        ValueError
+            If no URI can be found for reference
+        """
+        # TODO: Think about inferring the datatype of the original reference. Is this
+        # possible? It's important for keyfile management
         pass
 
     @abstractmethod
