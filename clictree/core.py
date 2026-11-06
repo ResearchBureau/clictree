@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, Iterator, List, Optional, TypeVar, Union, \
+from typing import Any, Dict, Generic, Iterator, List, Optional, Type, TypeVar, Union, \
     get_args, get_origin
 
-from clictree.identifiers import PatientIdentifier, UNKNOWN_PATIENT, URI, \
+from clictree.identifiers import Identifier, PatientIdentifier, UNKNOWN_PATIENT, URI, \
     ResultReference, URIScope
 
 # variables used in abstract base classes below
 InputType = TypeVar("InputType")
 OutputType = TypeVar("OutputType")
-KeyType = TypeVar("KeyType")
+KeyType = TypeVar("KeyType", bound=Identifier)
 
 
 class Transformation(ABC, Generic[InputType, OutputType]):
@@ -36,7 +36,25 @@ class Identity(Transformation[Any, Any]):
 
 
 class Store(ABC, Generic[KeyType, OutputType]):
-    """A thing that can provide a specific dataitem by key"""
+    """A thing that can provide a specific dataitem by key
+
+    Responsibilities
+    ----------------
+    * Know how to retrieve its output data
+    * Accepts its given key type
+    * Be able to convert any string to its given key type
+
+    You can use either the classes KeyType (always an Identifier subclass)
+    or string to request data from a store. The idea is that string is quick and
+    slightly sloppy, using an Identifier instance is more work (requires initialising
+    the object, knowing which type to use) but unambiguous.
+
+    For example, when requesting a study from a VNA store, you could use a
+    retrieve('12345'). The store then has to guess what kind of key this is. It
+    might guess it's an accession_number. As long as you work with accession numbers
+    things work quick and easy. In case you actually want to use a StudyInstanceUID
+    though, you could use retrieve(SUID('12345')) to make and unambiguous call.
+    """
 
     @abstractmethod
     def retrieve(self, key: KeyType) -> OutputType:
@@ -258,15 +276,27 @@ class Link(ABC, Generic[InputType,OutputType]):
         self.transformation = transformation
 
     @abstractmethod
-    def get_original_uri(self, reference: ResultReference) -> URI:
-        """Given the reference used in A, what in B does this point to?
+    def get_original_uri(self, identifier: Identifier) -> URI:
+        """Given an identifier pseudonym used in A (linked), what in B (original)
+        does this point to?
+
+        Parameters
+        ----------
+        identifier:
+            Identifier coming from linkedContainer. The pseudonym under
+            which a dataItem from another domain is known.
+
+        Returns
+        -------
+        URI:
+            The context-level path to the original dataItem
+
         Raises
         ------
         ValueError
-            If no URI can be found for reference
+            If no URI can be found for identifier
         """
-        # TODO: Think about inferring the datatype of the original reference. Is this
-        # possible? It's important for keyfile management
+
         pass
 
     @abstractmethod
@@ -280,24 +310,49 @@ class Link(ABC, Generic[InputType,OutputType]):
         """
         self.transformation.transform(input_data)
 
-    def get_data_item(self, reference: ResultReference) -> OutputType:
+    def get_data_item(self, identifier: Identifier) -> OutputType:
         """Obtain a transformed version of the referenced DataItem"""
-        org_uri = self.get_original_uri(reference)
+        org_uri = self.get_original_uri(identifier)
         return self.transform(
             self.context.get_data_item(org_uri))
 
 
 
-class LinkedContainer(Store[ResultReference, OutputType]):
+class LinkedContainer(Store[ResultReference, DataItem]):
     """Represents a link to a container in a different domain. This is the only place
-    within a domain that you can access DataItems from other domains. What you receive
-    is always a transformation, never the original DataItem.
+    within a domain that you can access DataItems from other domains. Requires a Link
+    instance to work. It can be seen as the in-domain representation of a context
+    (higher than domain)-level Link.  What you receive is always a transformation,
+    never the original DataItem.
+
+    Responsibilities
+    * Provide in-domain access to a Link instance
+    * Cast any incoming ResultReference to the right key type
+
+
     """
-    def __init__(self, link:Link[Any,OutputType]):
+    def __init__(self, link:Link[Any,DataItem]):
         self.link = link
 
+    def reference_to_key(self, reference: ResultReference) -> Identifier:
+        """Cast the given reference to the key type corresponding to the
+        key used in target container.
+
+        The key type for a LinkedContainer is the resultReference. This is a reference
+        which does not point to a DataItem directly, but points to some output. In this
+        case the 'output' is 'the DataItem that is linked to, transformed'.
+        To obtain this original dataItem, we need to find its original name. To
+        find its original name, we need to de-pseudonymize it via a keyMap.
+        To find the correct KeyMap we need to know the key type.
+        An AccessionNumber has a different pseudonym from a report ID, etc.
+        """
+        # TODO. This depends on whether this is linking a store or collection.
+        # Possibly  subclass?
+
     def retrieve(self, key: ResultReference) -> OutputType:
-        return self.link.get_data_item(key)
+        # TODO: convert to the correct key type!
+        typed_key = self.reference_to_key(key)
+        return self.link.get_data_item(typed_key)
 
 
 
