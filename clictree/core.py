@@ -217,6 +217,7 @@ class Context:
     * Holds credentials
     * Resolves URIs above domain level
     * Holds domain-boundary crossing links
+    * Links a unique name to all its Containers and Domains
     """
     def __init__(self, domains:Optional[Dict[str,Domain]]=None,
                  links:Optional[Dict[str,"Link"]]=None):
@@ -315,6 +316,24 @@ class Link(ABC, Generic[InputType,OutputType]):
         org_uri = self.get_original_uri(identifier)
         return self.transform(
             self.context.get_data_item(org_uri))
+
+
+class Interface:
+    """The space between two domains. Defines how Identifiers and DataItems change
+    from one domain to the other.
+
+    Responsibilities
+    ----------------
+    * In charge of holding all KeyMaps and Links. Interface is the only object
+      that can access KeyMaps.
+    * Knows the names of the two domains it exists between.
+    """
+
+    def __init__(self, links:Optional[Dict[str,Link]]=None):
+        if links is None:
+            links = {}
+        self.links = links
+
 
 
 
