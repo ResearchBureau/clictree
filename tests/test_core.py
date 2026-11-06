@@ -1,6 +1,9 @@
 
-from clictree.core import Context, Domain, LinkedContainer, TransformedStore
-from clictree.identifiers import URI
+from clictree.core import Context, Domain, Interface, KeyFile, Link, LinkedContainer, \
+    TransformedStore
+from clictree.identifiers import AccessionNumber, URI
+from clictree.keyfiles import AccessionNumberMap, MemoryOnlyBackend, \
+    PatientIdentifierMap
 from tests.factories import PatientChanger, SimpleLink, SimpleStore
 
 
@@ -52,22 +55,39 @@ def test_context_pipeline():
                  "USER":Domain()}
     )
 
-    #From user domain I want to obtain some data. Create a link.
-    link = SimpleLink(data_source_container=URI.from_string("//CLINICAL/VNA"),context=context)
-    context.links.append(link)
+    # I want to transfer data between clinical and user domain. Create an interface
+    # that can translate AccessionNumbers
+
+    key_file = KeyFile()
+    backend = MemoryOnlyBackend()
+    key_file.add_map(AccessionNumberMap(backend=backend, domain_a="CLINICAL",
+                                        domain_b="USER"))
+
+    interface = Interface(domain_a="CLINICAL", domain_b="USER",key_file=key_file)
+    context.add_interface(interface)  # make available in context
+
+    # add some accession number translations CLINICAL: USER
+    backend.insert_batch(values={"1234":"acc_1",
+                                 "4567":"acc_2",
+                                 "8901":"acc_3",},key_type=AccessionNumber)
+
+    # From user domain I want to obtain some data. Create a link in interface.
+    vna_link = Link(data_source_container=URI(domain_name="CLINICAL",
+                                                container_name="VNA"),
+                          destination_domain="USER",
+                          context=context)
+    # use only accession numbers to communicate with VNA. TODO: include this in Link?
+    vna_link.get_original_key_type = lambda: AccessionNumber
+
+    interface.links.append(vna_link)
 
     # Create a LinkedContainer in USER domain to attach the link to
-    linked = LinkedContainer(link=link)
-    context.domains["USER"].containers["LINKED"] = linked
+    context.domains["USER"].containers["LINKED"] = LinkedContainer(link=vna_link)
 
     # now try to obtain some data from USER domain via the link.
     user_domain = context.domains["USER"]
-    # any identifier ending in _CHANGED is accepted by SimpleLink()
 
-    """
-    studies = user_domain.get_data_item(URI.from_string("LINKED/1122_CHANGED"))
-    studies = [x for x in studies.data]  # expand iterator
+    studies = user_domain.get_data_item(URI.from_string("LINKED/acc_3"))
+    data = [x for x in studies.data]  # expand iterator
 
-    assert studies[1].PatientID == "Patient_1"
-    assert studies[1].StudyInstanceUID == "1122"
-    """
+    assert data[1].StudyInstanceUID == "8901"

@@ -5,9 +5,7 @@ from typing import Iterator
 from dicomtrolley.core import DICOMObjectReference, Query, StudyReference
 from dicomtrolley.trolley import Trolley
 
-from clictree.core import InputType, KeyType, OutputType, Store, Instance, Source, \
-    Transformation
-from clictree.data_items import InstanceIterator
+from clictree.core import Store, Source,
 from clictree.identifiers import AccessionNumber, DICOMStudyIdentifier, StudyInstanceUID
 from clictree.logs import get_module_logger
 
@@ -47,6 +45,3 @@ class AccessionNumberList(Source[AccessionNumber]):
         with open(self.path,'r') as f:
             for line in f:
                 yield AccessionNumber(line.strip('\n\r'))
-
-
-class KeyFileLink

@@ -1,8 +1,9 @@
 import pytest
 
 from clictree.identifiers import AccessionNumber, PatientIdentifier
-from clictree.keyfiles import AccessionNumberMap, KeyFile, MemoryOnlyBackend, \
+from clictree.keyfiles import AccessionNumberMap, MemoryOnlyBackend, \
     PatientIdentifierMap
+from clictree.core import KeyFile
 
 
 def test_keyfile():
@@ -14,8 +15,10 @@ def test_keyfile():
     domain_b = "derived"
 
     backend = MemoryOnlyBackend()
-    patient_map = PatientIdentifierMap(backend=backend, domain_a=domain_a, domain_b=domain_b)
-    acc_map = AccessionNumberMap(backend=backend, domain_a=domain_a, domain_b=domain_b)
+    patient_map = PatientIdentifierMap(backend=backend, domain_a=domain_a,
+                                       domain_b=domain_b)
+    acc_map = AccessionNumberMap(backend=backend, domain_a=domain_a,
+                                 domain_b=domain_b)
 
     key_file = KeyFile()
     key_file.add_map(patient_map)
