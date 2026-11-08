@@ -59,7 +59,7 @@ root_logger = logging.getLogger('clictree')
 Because that name was taken on pypi. Bit of a branding mistake not to check this.
 
 ### Can't AI just solve this?
-AI can solve your mother. The problem being solved here is a problem of human 
+No. The problem being solved here is a problem of human 
 communication and planning. AI can definitely help a lot to take over repetitive
 tasks, summarize contents, etc. But the core issue is still one of collaboration,
 not of lack of power to solve monotonous tasks.
