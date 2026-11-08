@@ -5,7 +5,8 @@ from typing import Iterator
 from dicomtrolley.core import DICOMObjectReference, Query, StudyReference
 from dicomtrolley.trolley import Trolley
 
-from clictree.core import Store, Source,
+from clictree.core import Store, Source
+from clictree.data_items import Instance
 from clictree.identifiers import AccessionNumber, DICOMStudyIdentifier, StudyInstanceUID
 from clictree.logs import get_module_logger
 

@@ -17,4 +17,5 @@ dicomrake = { path = "../dicomrake" }
 [dependency-groups]
 dev = [
     "dicomgenerator>=0.13.0",
+    "pre-commit>=4.6.2",
 ]
