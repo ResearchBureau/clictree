@@ -1,6 +1,10 @@
 # CLICTree
 
-The modular structure behind CLIC
+A structure for scientific data access, sharing and pseudonymization of clinical medical imaging data
+Resources
+
+
+![A trolley](docs/resources/clictree.png)
 
 ## For whom?
 This is meant for developers of all levels, working in the area of medical image
