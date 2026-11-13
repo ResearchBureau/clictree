@@ -73,17 +73,23 @@ class URI:
 
     The root indicator (slash) is important in interpreting a URL.
     Without root indicator, location elements are read from right to left:
+
     * 'a/b' means 'b' is the left-most location element <uid>,
        meaning 'a/b' refers to uid 'b' in container 'a'
     With root indicator, location elements are read from left to right:
+
     * '/a/b' means 'a' is the right-most location element <context>,
        meaning '/a/b' refers to domain 'b' in context 'a'
+
     You can use empty values to create relative links at any level:
     *  '//a/b' is a valid reference to a container 'b' in domain 'a'
 
     Location elements can be empty, but have to be consecutive:
+
     * 'a/b' is a valid reference to DataItem 'b' in container 'a'
+
     * '///a/b' means the same and is also valid
+
     * '//a//b' is not consecutive and thus invalid. DataItem 'b' in domain 'a' is
       meaningless without knowing the container in between.
 
