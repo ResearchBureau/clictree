@@ -14,7 +14,7 @@ def test_domain_basic():
     a_store = SimpleStore()
 
     domain.register_container(a_store,"VNA")
-    data = domain.get_data_item(URI.from_string("VNA/study_A"))
+    data = domain.get_data_item(URI.from_string("VNA:study_A"))
 
     studies = [x for x in data.data]
     assert len(studies) == 3
@@ -35,7 +35,7 @@ def test_domain_pipeline():
     domain.register_container(transformed, "TRANSFORMED")
 
     # Now you should be able to ask the domain for this URI
-    data = domain.get_data_item(URI.from_string("TRANSFORMED/1234"))
+    data = domain.get_data_item(URI.from_string("TRANSFORMED:1234"))
     studies = [x for x in data.data]
 
     # and the domain should be able to figure out what is needed, obtain source,
@@ -87,7 +87,7 @@ def test_context_pipeline():
     # now try to obtain some data from USER domain via the link.
     user_domain = context.domains["USER"]
 
-    studies = user_domain.get_data_item(URI.from_string("LINKED/acc_3"))
+    studies = user_domain.get_data_item(URI.from_string("LINKED:acc_3"))
     data = [x for x in studies.data]  # expand iterator
 
     assert data[1].StudyInstanceUID == "8901"

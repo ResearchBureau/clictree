@@ -98,7 +98,7 @@ class URI:
     A URI should be serializable to string
     """
 
-    SEPARATOR = "/"
+    SEPARATOR = ":"
     ROOT_INDICATOR = "/"
 
     def __init__(self, context_name: Optional[str]=None, domain_name:Optional[str]=None,

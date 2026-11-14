@@ -2,7 +2,7 @@
 You can contribute to this library in different ways
 
 ## Report bugs
-Report bugs at [https://github.com/ResearchBureau/clictree/issues]()
+Report bugs at [https://github.com/ResearchBureau/clictree/issues](https://github.com/ResearchBureau/clictree/issues)
 
 ## Contribute code
 ### Get the code
