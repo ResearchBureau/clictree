@@ -29,7 +29,7 @@ See below for more on [Identifiers](#identifier)
 is a link in URI resolution (see [URI](#URI) below)
 
 
-Sourcecode for [clictree.core.Domain](/reference/clictree/core/#clictree.core.Domain)
+Sourcecode for [clictree.core.Domain](../reference/clictree/core/#clictree.core.Domain)
 
 ## Container
 
