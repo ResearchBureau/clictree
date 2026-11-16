@@ -36,8 +36,8 @@ Sourcecode for [clictree.core.Domain](../reference/clictree/core/#clictree.core.
 ![container](resources/container.png)
 
 Inside a [domain](#domain), data is organized into `containers`. The two main types
-are the [Store](/reference/clictree/core/#clictree.core.Store), which you can ask for
-a data item by key, and the [Source](/reference/clictree/core/#clictree.core.Source), which
+are the [Store](../reference/clictree/core/#clictree.core.Store), which you can ask for
+a data item by key, and the [Source](../reference/clictree/core/#clictree.core.Source), which
 just gives a data item without a key.
 
 * **Containers are typed** Firstly, a container contains [data items](#data-item) of a single type.
@@ -49,14 +49,14 @@ To keep the number of terms under control, the general term `Container` will be 
 any 'thing holding data inside a domain'. When needed, specific subtypes will be used.
 
 ## Data Item
-Containers contain [Data Items](/reference/clictree/core/#clictree.core.DataItem). All
+Containers contain [Data Items](../reference/clictree/core/#clictree.core.DataItem). All
 data in clictree is in the form of data items.
 
 ![data_items](resources/data_items.png)
 
 * **Data items can contain any data**. DICOM images, reports, 
 a single clinical value, a gene essay result. New types can created by subclassing
-[clictree.core.DataItem](/reference/clictree/core/#clictree.core.DataItem).
+[clictree.core.DataItem](../reference/clictree/core/#clictree.core.DataItem).
 * **Data items are typed**. The type of data item determines what data it contains, 
 which transformations can be applied to it, how it should be read or downloaded.
 * **Data items contain separate metadata** The payload data for a data item type
@@ -82,7 +82,7 @@ but not the other way around.
 create a link responsibly, source container, transformation and purpose of both domains
 should work together to assure protection of patient privacy rights.   
 
-Source for [clictree.core.link](/reference/clictree/core/#clictree.core.Link)
+Source for [clictree.core.link](../reference/clictree/core/#clictree.core.Link)
 
 ## Identifier
 A unique name for something. Used to uniquely identify a piece of data inside a 
@@ -97,7 +97,7 @@ always points to the same thing. Identifiers change when they cross a domain bou
 'patient 1' in domain X can refer to a different patient than 'patient 1' in domain Y.
 * **Identifiers are typed**. A patient ID is different from a report ID. clictree 
 Containers, Links and KeyMaps only support specific identifier types. New identifiers 
-can be created by subclassing [clictree.identifiers.Identifier](/reference/clictree/identifiers/#clictree.identifiers.Identifier).
+can be created by subclassing [clictree.identifiers.Identifier](../reference/clictree/identifiers/#clictree.identifiers.Identifier).
 * **Unique reference in container, not in Domain**. The same identifier can be a key for
 two different DataItems. Asking container `A` for the data for Identifier `123` can 
 yield a different result than asking container `B` for `123`. As long as the two
@@ -107,7 +107,7 @@ different DataItems are both associated with `123` this makes sense.
 ## KeyMap
 Identifiers change when they cross between domains. In clictree, this change, 
 _for a single type of identifier_ is encapsulated by a 
-[KeyMap](/reference/clictree/core/#clictree.core.KeyMap).
+[KeyMap](../reference/clictree/core/#clictree.core.KeyMap).
 
 * **A KeyMap is typed**. A KeyMap describes the changes to a single type of identifier.
 For multiple identifier types, multiple KeyMaps are needed. The main reason for this
@@ -115,7 +115,7 @@ split is that mapping relationships between identifiers can vary by type.
 * **Change can also be a function**. The way a key changes can be given by an internal
 table `key2` = `key1`, but it can also be a function `key2` = `hash(key1)`. New
 KeyFile types can be created by subclassing 
-[#clictree.core.KeyMap](/reference/clictree/core/#clictree.core.KeyMap). 
+[#clictree.core.KeyMap](../reference/clictree/core/#clictree.core.KeyMap). 
 * **A KeyMap can be one-way or two-way**. Not all keymaps can translate both ways.
 `y = hash(x)` can be easy to compute for unknown `y` but not for unknown `x`. A KeyMap
 implementation should raise exceptions if changes are not possible.
@@ -123,12 +123,12 @@ implementation should raise exceptions if changes are not possible.
 
 ![KeyMap](resources/keymap.png)
 
-A [KeyMap](/reference/clictree/core/#clictree.core.KeyMap) represents the way one type 
+A [KeyMap](../reference/clictree/core/#clictree.core.KeyMap) represents the way one type 
 of identifiers change when crossing the domain boundary. In the example above, the 
 study identifier "867" on the left is known as "study1" in the domain on the right. 
 
 ## KeyFile
-A [KeyFile](/reference/clictree/core/#clictree.core.KeyFile) holds [KeyMaps](#Keymap)
+A [KeyFile](../reference/clictree/core/#clictree.core.KeyFile) holds [KeyMaps](#Keymap)
 for one or more identifiers types. It represents all identifier relationships between
 two [domains](#domain) 
 
@@ -239,7 +239,7 @@ Using the URIs in the image above, a data request from the user in domain `Y` ca
 described as follows:
 
 * Inside domain `Y`, a user requests `A':St1`. 
-* This request is sent to `A'`, which is a [linked container](/reference/clictree/core/#clictree.core.LinkedContainer)
+* This request is sent to `A'`, which is a [linked container](../reference/clictree/core/#clictree.core.LinkedContainer)
 linked to `/:X:A`, through a Link. The context uses the Link to translate `St1` to `123`
 and sends a request `X:A/123`.
 * Container `A` receives a request for `123`. It comes up with a data item '123' and 
@@ -249,7 +249,7 @@ sends it back through the link.
 `A'`
 * User receives the data item referenced by `A:St1`.
 
-See [clictree.identifiers.URI](/reference/clictree/identifiers/#clictree.identifiers.URI)
+See [clictree.identifiers.URI](../reference/clictree/identifiers/#clictree.identifiers.URI)
  
 
 
