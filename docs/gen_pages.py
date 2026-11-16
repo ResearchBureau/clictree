@@ -1,7 +1,8 @@
 """Generate code reference pages and navigation.
 Based on https://mkdocstrings.github.io/recipes/
 
-Works together with mkdocs plugins `gen_files` and `section_index` (see mkdocs.yml)
+Works together with properdocs plugins `gen_files` and `section_index`
+(see properdocs.yml)
 """
 
 from pathlib import Path
