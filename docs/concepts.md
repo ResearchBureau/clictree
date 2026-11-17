@@ -98,11 +98,16 @@ always points to the same thing. Identifiers change when they cross a domain bou
 * **Identifiers are typed**. A patient ID is different from a report ID. clictree 
 Containers, Links and KeyMaps only support specific identifier types. New identifiers 
 can be created by subclassing [clictree.identifiers.Identifier](../reference/clictree/identifiers/#clictree.identifiers.Identifier).
-* **Unique reference in container, not in Domain**. The same identifier can be a key for
-two different DataItems. Asking container `A` for the data for Identifier `123` can 
-yield a different result than asking container `B` for `123`. As long as the two
-different DataItems are both associated with `123` this makes sense. 
+* **Identifier alone is not unique in domain**. If the dataitem types are different. 
+Asking container `Image Archive` for the data for Identifier `Study1` can yield a
+medical imaging study DataItem. Asking container `Derived Results` for `Study1` can 
+yield a '3D mesh' DataItem. The same identifier can be a key for two different 
+DataItems. 
 
+![one_id_two_data_items](resources/one_id_two_data_items.png)
+
+The combination `type + Identifier` should be unique in a domain. `Identifier` by itself
+can point to different data items. 
 
 ## KeyMap
 Identifiers change when they cross between domains. In clictree, this change, 
