@@ -1,7 +1,7 @@
 """Things used in tests"""
 from dicomgenerator.generators import quick_dataset
 
-from clictree.core import Link, Store, Transformation
+from clictree.core import Channel, Store, Transformation
 from clictree.data_items import InstanceIterator
 from clictree.identifiers import DICOMStudyIdentifier, PatientIdentifier, URI, \
     ResultReference
@@ -31,8 +31,8 @@ class PatientChanger(Transformation[InstanceIterator,InstanceIterator]):
 
 
 
-class SimpleLink(Link[InstanceIterator, InstanceIterator]):
-    """A simple as possible implementation of a Link class. For testing
+class SimpleLink(Channel[InstanceIterator, InstanceIterator]):
+    """A simple as possible implementation of a Channel class. For testing
 
     Changes PatientID, and performs 'org' -> 'org_CHANGED' mapping
     """

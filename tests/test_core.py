@@ -1,5 +1,5 @@
 
-from clictree.core import Context, Domain, Interface, KeyFile, Link, LinkedContainer, \
+from clictree.core import Context, Domain, Interface, KeyFile, Channel, LinkedContainer, \
     TransformedStore
 from clictree.identifiers import AccessionNumber, URI
 from clictree.keyfiles import AccessionNumberMap, MemoryOnlyBackend, \
@@ -46,7 +46,7 @@ def test_domain_pipeline():
 
 
 def test_context_pipeline():
-    """Try to download something from a different domain through a Link
+    """Try to download something from a different domain through a Channel
     """
 
     # a context with a clinical domain and a user domain
@@ -72,11 +72,11 @@ def test_context_pipeline():
                                  "8901":"acc_3",},key_type=AccessionNumber)
 
     # From user domain I want to obtain some data. Create a link in interface.
-    vna_link = Link(data_source_container=URI(domain_name="CLINICAL",
-                                                container_name="VNA"),
-                          destination_domain="USER",
-                          context=context)
-    # use only accession numbers to communicate with VNA. TODO: include this in Link?
+    vna_link = Channel(data_source_container=URI(domain_name="CLINICAL",
+                                                 container_name="VNA"),
+                       destination_domain="USER",
+                       context=context)
+    # use only accession numbers to communicate with VNA. TODO: include this in Channel?
     vna_link.get_original_key_type = lambda: AccessionNumber
 
     interface.links.append(vna_link)

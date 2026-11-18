@@ -28,7 +28,7 @@ class Identity(Transformation[Any, Any]):
     """Let data through unaltered.
 
     All other transformation child classes are in clictree.transformations. This one
-    is an exception as it is part of the default Link implementation below
+    is an exception as it is part of the default Channel implementation below
     """
 
     def transform(self, input_data: Any) -> Any:
@@ -274,7 +274,7 @@ class Context:
         return domain.get_data_item(container_lvl_uri)
 
 
-class Link(Generic[InputType,OutputType]):
+class Channel(Generic[InputType,OutputType]):
     """A transforming connection between two containers. Can cross a domain boundary.
     Translates Identifiers between domains. Is one-directional.
     A link A -> B means A can access a transformation of
@@ -282,7 +282,7 @@ class Link(Generic[InputType,OutputType]):
     data being passed to A.
 
     A link reasons across domains so can only exist at the context level or higher.
-    Link itself cannot collect data. It is only a tool used by context to know
+    Channel itself cannot collect data. It is only a tool used by context to know
     what to collect and how to transform.
     """
 
@@ -298,7 +298,7 @@ class Link(Generic[InputType,OutputType]):
         destination_domain: str
             Requests come from there, data is sent to there.
         context:
-            linking whole context. here to enable Link to perform domain-level actions.
+            linking whole context. here to enable Channel to perform domain-level actions.
             This will be behind some kind of authorisation layer in the future
         transformation, optional:
             Transformation for any data requested through this link. Defaults to
@@ -371,18 +371,18 @@ class Link(Generic[InputType,OutputType]):
 
 class LinkedContainer(Store[ResultReference, DataItem]):
     """Represents a link to a container in a different domain. This is the only place
-    within a domain that you can access DataItems from other domains. Requires a Link
+    within a domain that you can access DataItems from other domains. Requires a Channel
     instance to work. It can be seen as the in-domain representation of a context
-    (higher than domain)-level Link.  What you receive is always a transformation,
+    (higher than domain)-level Channel.  What you receive is always a transformation,
     never the original DataItem.
 
     Responsibilities
-    * Provide in-domain access to a Link instance
+    * Provide in-domain access to a Channel instance
     * Cast any incoming ResultReference to the right key type
 
 
     """
-    def __init__(self, link:Link[Any,DataItem]):
+    def __init__(self, link:Channel[Any,DataItem]):
         self.link = link
 
     def reference_to_key(self, reference: ResultReference) -> Identifier:
@@ -648,7 +648,7 @@ class Interface:
 
     def __init__(self, domain_a: str, domain_b: str,
                  key_file: KeyFile,
-                 links:List[Link]=None,
+                 links:List[Channel]=None,
                  ):
         self.domain_a = domain_a
         self.domain_b = domain_b

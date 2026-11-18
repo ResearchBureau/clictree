@@ -17,7 +17,7 @@ For clictree, the following aspects of a domain are important
  
 * **Data cannot leave a domain**. The domain boundary is guarded by both technical and 
 organizational measures. Crossing the domain boundary can only be done under strict
-circumstances (see [links](#link) below).
+circumstances (see [channels](#channel) below).
 * **A domain has a purpose**. The data inside a domain can be used for a certain reason.
 Research into a specific illness, validating a new tool, publicity, etc. The purpose 
 of a domain is an important factor in deciding whether, and if so, how, new data can
@@ -26,7 +26,7 @@ be included in a domain.
 always refers to the same thing. Different domains usually use different identifiers.
 See below for more on [Identifiers](#identifier) 
 * **A domain knows its data containers**. A domain names and organises its data. It
-is a link in URI resolution (see [URI](#URI) below)
+is a channel in URI resolution (see [URI](#URI) below)
 
 
 Sourcecode for [clictree.core.Domain](../reference/clictree/core/#clictree.core.Domain)
@@ -64,25 +64,25 @@ can be anything, the meta section needs to conform to a clictree-wide structure.
 makes it possible to search and query over disparate data item types.
 
 
-## Link
-The only way for data to cross a domain boundary is through a `link`. Links transform
+## Channel
+The only way for data to cross a domain boundary is through a `channel`. Channels transform
 data from one specific container in domain X, and expose this transformed data inside
-domain Y. The anchor point in domain Y is a 'Linked container' under the control of 
+domain Y. The anchor point in domain Y is a 'Channeled container' under the control of 
 domain Y.
 
-![Domain_and_link](resources/domain_and_link.png)
+![Domain_and_channel](resources/domain_and_channel.png)
 
-A few important aspects of links
+A few important aspects of channels
 
-* **Links only link a single container**. Other containers in the same domain are not
+* **Channels only channel a single container**. Other containers in the same domain are not
 accessible
-* **Links are directional**. A link can transform data coming from a single container,
+* **Channels are directional**. A channel can transform data coming from a single container,
 but not the other way around.
-* **Link creation should be regulated**. A link is a breach in a domain boundary. To
-create a link responsibly, source container, transformation and purpose of both domains
+* **Channel creation should be regulated**. A channel is a breach in a domain boundary. To
+create a channel responsibly, source container, transformation and purpose of both domains
 should work together to assure protection of patient privacy rights.   
 
-Source for [clictree.core.link](../reference/clictree/core/#clictree.core.Link)
+Source for [clictree.core.channel](../reference/clictree/core/#clictree.core.Channel)
 
 ## Identifier
 A unique name for something. Used to uniquely identify a piece of data inside a 
@@ -96,7 +96,7 @@ domains
 always points to the same thing. Identifiers change when they cross a domain boundary. 
 'patient 1' in domain X can refer to a different patient than 'patient 1' in domain Y.
 * **Identifiers are typed**. A patient ID is different from a report ID. clictree 
-Containers, Links and KeyMaps only support specific identifier types. New identifiers 
+Containers, Channels and KeyMaps only support specific identifier types. New identifiers 
 can be created by subclassing [clictree.identifiers.Identifier](../reference/clictree/identifiers/#clictree.identifiers.Identifier).
 * **Identifier alone is not unique in domain**. If the dataitem types are different. 
 Asking container `Image Archive` for the data for Identifier `Study1` can yield a
@@ -149,13 +149,13 @@ The space between two domains. Relation between two domains.
 not defined one step higher in the clictree [object hierarchy](#object-hierarchy), 
 in [Context](#Context)
 * **Interface is not directional**. Interface `X-Y` is the same as Interface `Y-X`. 
-* **One KeyFile per Interface**. There can be multiple links per interface, but the 
-Identifier mapping (defined by a [KeyFile](#keyFile)) must be the same for all links.
+* **One KeyFile per Interface**. There can be multiple channels per interface, but the 
+Identifier mapping (defined by a [KeyFile](#keyFile)) must be the same for all channels.
 Each interface can only have one KeyFile. See example below.
 
 ![Interface with keyfile](resources/interface_keyfile.png)
 
-In the example above, `L1` and `L2` are [links](#link) transforming the data 
+In the example above, `C1` and `C2` are [channels](#channel) transforming the data 
 from [containers](#container) `A` and `B` respectively. `A` and `B` output different
 types of [data items](#DataItem) and might transform the data in any way. However, if
 they translate an [Identifier](#identifier) such as the Patient ID `123` (in domain X), 
@@ -171,7 +171,7 @@ KeyFile.
 The highest level in the clictree [object hierarchy](#object-hierarchy). It is the only 
 object level higher than domain, and thus is in charge of all cross-domain information.
 This includes naming [domains](#domain), holding [interfaces](#interface) and 
-orchestrating transformations in [Links](#link). It is also in charge of **credentials**.
+orchestrating transformations in [Channels](#channel). It is also in charge of **credentials**.
 
 ## Object hierarchy
 All objects in clictree exist in the relationship 
@@ -244,13 +244,13 @@ Using the URIs in the image above, a data request from the user in domain `Y` ca
 described as follows:
 
 * Inside domain `Y`, a user requests `A':St1`. 
-* This request is sent to `A'`, which is a [linked container](../reference/clictree/core/#clictree.core.LinkedContainer)
-linked to `/:X:A`, through a Link. The context uses the Link to translate `St1` to `123`
+* This request is sent to `A'`, which is a [channeled container](../reference/clictree/core/#clictree.core.ChanneledContainer)
+channeled to `/:X:A`, through a Channel. The context uses the Channel to translate `St1` to `123`
 and sends a request `X:A/123`.
 * Container `A` receives a request for `123`. It comes up with a data item '123' and 
-sends it back through the link.
-* The context uses the Link again to transform data item '123', changing any mention of
-'123' back to 'St1'. The transformed data item is then sent back through linked container
+sends it back through the channel.
+* The context uses the Channel again to transform data item '123', changing any mention of
+'123' back to 'St1'. The transformed data item is then sent back through channeled container
 `A'`
 * User receives the data item referenced by `A:St1`.
 
