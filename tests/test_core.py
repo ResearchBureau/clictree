@@ -21,7 +21,7 @@ def test_domain_basic():
     assert studies[1].SOPInstanceUID == "2"
 
 def test_domain_pipeline():
-    """Try to download something that requires chaining through a link"""
+    """Try to download something that requires chaining through a channel"""
 
     # create a domain
     domain = Domain()
@@ -71,7 +71,7 @@ def test_context_pipeline():
                                  "4567":"acc_2",
                                  "8901":"acc_3",},key_type=AccessionNumber)
 
-    # From user domain I want to obtain some data. Create a link in interface.
+    # From user domain I want to obtain some data. Create a channel in interface.
     vna_link = Channel(data_source_container=URI(domain_name="CLINICAL",
                                                  container_name="VNA"),
                        destination_domain="USER",
@@ -79,12 +79,12 @@ def test_context_pipeline():
     # use only accession numbers to communicate with VNA. TODO: include this in Channel?
     vna_link.get_original_key_type = lambda: AccessionNumber
 
-    interface.links.append(vna_link)
+    interface.channels.append(vna_link)
 
-    # Create a LinkedContainer in USER domain to attach the link to
-    context.domains["USER"].containers["LINKED"] = LinkedContainer(link=vna_link)
+    # Create a LinkedContainer in USER domain to attach the channel to
+    context.domains["USER"].containers["LINKED"] = LinkedContainer(channel=vna_link)
 
-    # now try to obtain some data from USER domain via the link.
+    # now try to obtain some data from USER domain via the channel.
     user_domain = context.domains["USER"]
 
     studies = user_domain.get_data_item(URI.from_string("LINKED:acc_3"))

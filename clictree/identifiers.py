@@ -81,7 +81,7 @@ class URI:
     * '/a/b' means 'a' is the right-most location element <context>,
        meaning '/a/b' refers to domain 'b' in context 'a'
 
-    You can use empty values to create relative links at any level:
+    You can use empty values to create relative channels at any level:
     *  '//a/b' is a valid reference to a container 'b' in domain 'a'
 
     Location elements can be empty, but have to be consecutive:

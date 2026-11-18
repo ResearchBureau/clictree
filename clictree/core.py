@@ -277,11 +277,11 @@ class Context:
 class Channel(Generic[InputType,OutputType]):
     """A transforming connection between two containers. Can cross a domain boundary.
     Translates Identifiers between domains. Is one-directional.
-    A link A -> B means A can access a transformation of
+    A channel A -> B means A can access a transformation of
     DataItems in B. InputType is the data coming from B, OutputType is the
     data being passed to A.
 
-    A link reasons across domains so can only exist at the context level or higher.
+    A channel reasons across domains so can only exist at the context level or higher.
     Channel itself cannot collect data. It is only a tool used by context to know
     what to collect and how to transform.
     """
@@ -301,7 +301,7 @@ class Channel(Generic[InputType,OutputType]):
             linking whole context. here to enable Channel to perform domain-level actions.
             This will be behind some kind of authorisation layer in the future
         transformation, optional:
-            Transformation for any data requested through this link. Defaults to
+            Transformation for any data requested through this channel. Defaults to
             Identity, meaning data is let through unaltered
         """
         self.data_source_container = data_source_container
@@ -339,7 +339,7 @@ class Channel(Generic[InputType,OutputType]):
             If no URI can be found for identifier
         """
 
-        # Get Interface that this link is part of
+        # Get Interface that this channel is part of
         interface = self.context.get_interface(
             self.data_source_domain, self.destination_domain)
 
@@ -353,7 +353,7 @@ class Channel(Generic[InputType,OutputType]):
 
 
     def transform(self, input_data: InputType) -> OutputType:
-        """Tranform the given input data into the given output.
+        """Transform the given input data into the given output.
 
         Raises
         ------
@@ -382,8 +382,8 @@ class LinkedContainer(Store[ResultReference, DataItem]):
 
 
     """
-    def __init__(self, link:Channel[Any,DataItem]):
-        self.link = link
+    def __init__(self, channel:Channel[Any,DataItem]):
+        self.channel = channel
 
     def reference_to_key(self, reference: ResultReference) -> Identifier:
         """Cast the given reference to the key type corresponding to the
@@ -398,13 +398,13 @@ class LinkedContainer(Store[ResultReference, DataItem]):
         An AccessionNumber has a different pseudonym from a report ID, etc.
         """
         # find the key type for the linked Store and convert
-        key_type = self.link.get_original_key_type()
+        key_type = self.channel.get_original_key_type()
         return key_type(reference.value)
 
 
     def retrieve(self, key: ResultReference) -> OutputType:
         typed_key = self.reference_to_key(key)
-        return self.link.get_data_item(typed_key)
+        return self.channel.get_data_item(typed_key)
 
 
 class Backend(ABC):
@@ -641,22 +641,22 @@ class Interface:
 
     Responsibilities
     ----------------
-    * In charge of holding all KeyMaps and Links. Interface is the only object
+    * In charge of holding all KeyMaps and Channels. Interface is the only object
       that can access KeyMaps.
     * Knows the names of the two domains it exists between.
     """
 
     def __init__(self, domain_a: str, domain_b: str,
                  key_file: KeyFile,
-                 links:List[Channel]=None,
+                 channels:List[Channel]=None,
                  ):
         self.domain_a = domain_a
         self.domain_b = domain_b
         self.key_file = key_file
 
-        if links is None:
-            links = []
-        self.links = links
+        if channels is None:
+            channels = []
+        self.channels = channels
 
     def retrieve_counterpart(self, domain_name: str, key: KeyType) -> KeyType:
         """Retrieve the counterpart to key from domain"""
